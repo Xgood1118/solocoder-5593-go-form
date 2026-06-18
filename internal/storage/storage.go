@@ -199,8 +199,9 @@ func (s *Store) ListSchemas() ([]models.FormSchema, error) {
 	return schemas, err
 }
 
-func (s *Store) DeleteSchema(id string) error {
-	return s.db.Update(func(tx *bolt.Tx) error {
+func (s *Store) DeleteSchema(id string) (bool, error) {
+	deleted := false
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketSchemas)
 		prefix := []byte(id + ":")
 		c := b.Cursor()
@@ -208,9 +209,11 @@ func (s *Store) DeleteSchema(id string) error {
 			if err := b.Delete(append([]byte{}, k...)); err != nil {
 				return err
 			}
+			deleted = true
 		}
 		return nil
 	})
+	return deleted, err
 }
 
 func (s *Store) CreateSubmission(sub *models.Submission) error {
@@ -220,6 +223,7 @@ func (s *Store) CreateSubmission(sub *models.Submission) error {
 	now := time.Now()
 	sub.CreatedAt = now
 	sub.UpdatedAt = now
+	sub.Revision = 1
 
 	return s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketSubmissions)
@@ -232,14 +236,24 @@ func (s *Store) CreateSubmission(sub *models.Submission) error {
 }
 
 func (s *Store) UpdateSubmission(sub *models.Submission) error {
-	sub.UpdatedAt = time.Now()
-
 	return s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketSubmissions)
 		existing := b.Get([]byte(sub.ID))
 		if existing == nil {
 			return fmt.Errorf("submission not found: %s", sub.ID)
 		}
+
+		var stored models.Submission
+		if err := json.Unmarshal(existing, &stored); err != nil {
+			return err
+		}
+		if stored.Revision != sub.Revision {
+			return models.ErrConflict
+		}
+
+		sub.Revision = stored.Revision + 1
+		sub.UpdatedAt = time.Now()
+
 		data, err := json.Marshal(sub)
 		if err != nil {
 			return err
@@ -291,11 +305,19 @@ func (s *Store) ListSubmissions(formID string) ([]models.Submission, error) {
 	return subs, err
 }
 
-func (s *Store) DeleteSubmission(id string) error {
-	return s.db.Update(func(tx *bolt.Tx) error {
+func (s *Store) DeleteSubmission(id string) (bool, error) {
+	deleted := false
+	err := s.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket(bucketSubmissions)
-		return b.Delete([]byte(id))
+		key := []byte(id)
+		existing := b.Get(key)
+		if existing == nil {
+			return nil
+		}
+		deleted = true
+		return b.Delete(key)
 	})
+	return deleted, err
 }
 
 func (s *Store) RecordSubmissionAttempt(formID, userID string, window time.Duration, maxCount int) (bool, error) {

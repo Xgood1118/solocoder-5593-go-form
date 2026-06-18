@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type FieldType string
 
@@ -150,9 +153,12 @@ type Submission struct {
 
 	ApprovalHistory []ApprovalRecord `json:"approval_history,omitempty"`
 
+	Revision int       `json:"revision"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+var ErrConflict = fmt.Errorf("concurrent modification conflict")
 
 type ApprovalStatus string
 

@@ -12,6 +12,8 @@ import (
 )
 
 func ValidateSubmission(schema *models.FormSchema, data map[string]interface{}) models.ValidationResult {
+	fillDefaults(schema.Fields, data)
+
 	errors := make([]models.ValidationError, 0)
 
 	for _, field := range schema.Fields {
@@ -23,6 +25,32 @@ func ValidateSubmission(schema *models.FormSchema, data map[string]interface{}) 
 		Valid:  len(errors) == 0,
 		Errors: errors,
 	}
+}
+
+func fillDefaults(fields []models.FieldDef, data map[string]interface{}) {
+	for _, field := range fields {
+		if field.Rules.DefaultValue == nil {
+			continue
+		}
+
+		val, exists := data[field.Key]
+		if !exists || isNullOrBlank(val, field.Type) {
+			data[field.Key] = field.Rules.DefaultValue
+		}
+	}
+}
+
+func isNullOrBlank(val interface{}, fieldType models.FieldType) bool {
+	if val == nil {
+		return true
+	}
+	switch fieldType {
+	case models.FieldTypeText, models.FieldTypeTextarea, models.FieldTypeRichtext:
+		if s, ok := val.(string); ok && strings.TrimSpace(s) == "" {
+			return true
+		}
+	}
+	return false
 }
 
 func validateField(field models.FieldDef, data map[string]interface{}, prefix string) []models.ValidationError {
@@ -149,6 +177,10 @@ func isEmpty(value interface{}) bool {
 		return len(v) == 0
 	case map[string]interface{}:
 		return len(v) == 0
+	case bool:
+		return false
+	case int, int8, int16, int32, int64, float32, float64:
+		return false
 	default:
 		return reflect.DeepEqual(value, reflect.Zero(reflect.TypeOf(value)).Interface())
 	}

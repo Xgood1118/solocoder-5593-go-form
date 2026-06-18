@@ -93,7 +93,7 @@ func main() {
 	log.Println("  POST /api/submissions/:id/approve - Approve submission")
 	log.Println("  POST /api/submissions/:id/reject  - Reject submission")
 
-	if err := r.Run(":8143"); err != nil {
+	if err := r.Run(":8083"); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }

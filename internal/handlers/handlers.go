@@ -150,8 +150,14 @@ func (h *Handler) ListSchemas(c *gin.Context) {
 func (h *Handler) DeleteSchema(c *gin.Context) {
 	id := c.Param("id")
 
-	if err := h.store.DeleteSchema(id); err != nil {
+	deleted, err := h.store.DeleteSchema(id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if !deleted {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Schema 不存在"})
 		return
 	}
 
@@ -328,22 +334,31 @@ func (h *Handler) ApproveSubmission(c *gin.Context) {
 		return
 	}
 
-	sub, err := h.store.GetSubmission(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if sub == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "提交记录不存在"})
+	const maxRetries = 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		sub, err := h.store.GetSubmission(id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if sub == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "提交记录不存在"})
+			return
+		}
+
+		if err := h.workflow.Approve(sub, req.Approver, req.Comment); err != nil {
+			if err == models.ErrConflict {
+				continue
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, sub)
 		return
 	}
 
-	if err := h.workflow.Approve(sub, req.Approver, req.Comment); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, sub)
+	c.JSON(http.StatusConflict, gin.H{"error": "操作冲突，请重试", "code": "conflict"})
 }
 
 func (h *Handler) RejectSubmission(c *gin.Context) {
@@ -355,22 +370,31 @@ func (h *Handler) RejectSubmission(c *gin.Context) {
 		return
 	}
 
-	sub, err := h.store.GetSubmission(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if sub == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "提交记录不存在"})
+	const maxRetries = 3
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		sub, err := h.store.GetSubmission(id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if sub == nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "提交记录不存在"})
+			return
+		}
+
+		if err := h.workflow.Reject(sub, req.Approver, req.Comment); err != nil {
+			if err == models.ErrConflict {
+				continue
+			}
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, sub)
 		return
 	}
 
-	if err := h.workflow.Reject(sub, req.Approver, req.Comment); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, sub)
+	c.JSON(http.StatusConflict, gin.H{"error": "操作冲突，请重试", "code": "conflict"})
 }
 
 func (h *Handler) UploadFile(c *gin.Context) {
@@ -406,8 +430,14 @@ func (h *Handler) UploadFile(c *gin.Context) {
 func (h *Handler) DeleteSubmission(c *gin.Context) {
 	id := c.Param("id")
 
-	if err := h.store.DeleteSubmission(id); err != nil {
+	deleted, err := h.store.DeleteSubmission(id)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if !deleted {
+		c.JSON(http.StatusNotFound, gin.H{"error": "提交记录不存在"})
 		return
 	}
 

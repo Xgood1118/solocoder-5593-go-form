@@ -10,7 +10,7 @@ import (
 
 func Evaluate(expr interface{}, data map[string]interface{}) bool {
 	if expr == nil {
-		return true
+		return false
 	}
 
 	switch v := expr.(type) {
@@ -19,7 +19,7 @@ func Evaluate(expr interface{}, data map[string]interface{}) bool {
 	case map[string]interface{}:
 		return evaluateMap(v, data)
 	default:
-		return true
+		return toBool(v)
 	}
 }
 
@@ -27,8 +27,8 @@ func evaluateMap(expr map[string]interface{}, data map[string]interface{}) bool 
 	for op, val := range expr {
 		switch op {
 		case "var":
-			_, _ = getVar(val, data)
-			return true
+			result, _ := getVar(val, data)
+			return toBool(result)
 		case "==":
 			arr, ok := val.([]interface{})
 			if !ok || len(arr) < 2 {
