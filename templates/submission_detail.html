@@ -1,0 +1,128 @@
+{{template "header.html" .}}
+
+{{$sub := .Submission}}
+{{$schema := .Schema}}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h2 style="margin:0; border:none; padding:0;">提交详情</h2>
+            <p style="color:#666; margin-top:8px;">
+                表单: {{if $schema}}{{$schema.Name}}{{else}}{{$sub.FormID}}{{end}}
+                · 提交人: {{$sub.SubmitterName}} ({{$sub.SubmitterID}})
+            </p>
+            <p style="color:#999; font-size:12px; margin-top:4px;">
+                ID: <code>{{$sub.ID}}</code> · Schema v{{$sub.SchemaVersion}} · 提交于 {{$sub.CreatedAt.Format "2006-01-02 15:04:05"}}
+            </p>
+        </div>
+        <div>
+            <a href="/admin/submissions" class="btn btn-default">返回列表</a>
+            {{if eq $sub.Status "pending"}}
+            <button onclick="approve()" class="btn btn-success">通过</button>
+            <button onclick="reject()" class="btn btn-danger">驳回</button>
+            {{end}}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>提交状态</h2>
+    <div style="margin-bottom: 16px;">
+        {{if eq $sub.Status "draft"}}
+        <span class="badge badge-draft" style="font-size:14px; padding:4px 12px;">草稿</span>
+        {{else if eq $sub.Status "pending"}}
+        <span class="badge badge-pending" style="font-size:14px; padding:4px 12px;">待审批</span>
+        {{else if eq $sub.Status "approved"}}
+        <span class="badge badge-approved" style="font-size:14px; padding:4px 12px;">已通过</span>
+        {{else if eq $sub.Status "rejected"}}
+        <span class="badge badge-rejected" style="font-size:14px; padding:4px 12px;">已驳回</span>
+        {{end}}
+        {{if $sub.CurrentNode}}
+        <span style="margin-left: 12px; color: #666;">当前节点: {{$sub.CurrentNode}}</span>
+        {{end}}
+    </div>
+    {{if $sub.ApprovalHistory}}
+    <h3 style="font-size:14px; margin-bottom:12px; color:#666;">审批历史</h3>
+    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        {{range $sub.ApprovalHistory}}
+        <div style="padding: 12px 16px; background: #fafafa; border-radius: 6px; min-width: 180px;">
+            <div style="font-weight: bold; margin-bottom: 4px;">{{.NodeName}}</div>
+            <div style="font-size: 12px; color: #999; margin-bottom: 4px;">审批人: {{.Approver}}</div>
+            {{if eq .Status "pending"}}
+            <span class="badge badge-pending">待处理</span>
+            {{else if eq .Status "approved"}}
+            <span class="badge badge-approved">已通过</span>
+            {{else if eq .Status "rejected"}}
+            <span class="badge badge-rejected">已驳回</span>
+            {{end}}
+            {{if .Comment}}
+            <div style="font-size: 12px; color: #666; margin-top: 4px;">备注: {{.Comment}}</div>
+            {{end}}
+            {{if .ApprovedAt}}
+            <div style="font-size: 11px; color: #999; margin-top: 4px;">{{.ApprovedAt.Format "2006-01-02 15:04"}}</div>
+            {{end}}
+        </div>
+        {{end}}
+    </div>
+    {{end}}
+</div>
+
+<div class="card">
+    <h2>提交数据</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 200px;">字段</th>
+                <th>值</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range $key, $value := $sub.Data}}
+            <tr>
+                <td><strong>{{$key}}</strong></td>
+                <td>
+                    {{if eq (printf "%T" $value) "[]interface {}"}}
+                        {{range $value}}
+                            <span style="display:inline-block; background:#f0f7ff; padding:2px 8px; border-radius:3px; margin-right:4px; font-size:12px;">{{.}}</span>
+                        {{end}}
+                    {{else if eq (printf "%T" $value) "map[string]interface {}"}}
+                        <pre style="background:#f5f5f5; padding:8px; border-radius:4px; font-size:12px; overflow:auto;">{{$value | jsonMarshal}}</pre>
+                    {{else}}
+                        {{$value}}
+                    {{end}}
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+<script>
+function approve() {
+    const comment = prompt("请输入审批意见（可选）：");
+    if (comment === null) return;
+    fetch('/api/submissions/{{$sub.ID}}/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approver: 'admin', comment: comment })
+    }).then(r => r.json()).then(data => {
+        if (data.error) alert(data.error);
+        else location.reload();
+    });
+}
+
+function reject() {
+    const comment = prompt("请输入驳回理由：");
+    if (!comment) return;
+    fetch('/api/submissions/{{$sub.ID}}/reject', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approver: 'admin', comment: comment })
+    }).then(r => r.json()).then(data => {
+        if (data.error) alert(data.error);
+        else location.reload();
+    });
+}
+</script>
+
+{{template "footer.html"}}

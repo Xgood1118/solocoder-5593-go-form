@@ -1,0 +1,51 @@
+{{template "header.html" .}}
+
+<div class="card">
+    <h2>欢迎使用动态表单引擎</h2>
+    <p style="margin-bottom: 16px; color: #666;">基于 JSON 配置的动态表单引擎，支持多种字段类型、校验规则、条件显示、版本管理和审批工作流。</p>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 24px;">
+        <div style="text-align: center; padding: 20px; background: #f0f7ff; border-radius: 8px;">
+            <div style="font-size: 32px; color: #1890ff;">📝</div>
+            <div style="font-size: 24px; font-weight: bold; margin: 8px 0;">{{.SchemaCount}}</div>
+            <div style="color: #666; font-size: 14px;">表单总数</div>
+        </div>
+        <div style="text-align: center; padding: 20px; background: #f6ffed; border-radius: 8px;">
+            <div style="font-size: 32px; color: #52c41a;">✅</div>
+            <div style="font-size: 24px; font-weight: bold; margin: 8px 0;">{{.ApprovedCount}}</div>
+            <div style="color: #666; font-size: 14px;">已通过</div>
+        </div>
+        <div style="text-align: center; padding: 20px; background: #fffbe6; border-radius: 8px;">
+            <div style="font-size: 32px; color: #faad14;">⏳</div>
+            <div style="font-size: 24px; font-weight: bold; margin: 8px 0;">{{.PendingCount}}</div>
+            <div style="color: #666; font-size: 14px;">待审批</div>
+        </div>
+        <div style="text-align: center; padding: 20px; background: #fff1f0; border-radius: 8px;">
+            <div style="font-size: 32px; color: #ff4d4f;">❌</div>
+            <div style="font-size: 24px; font-weight: bold; margin: 8px 0;">{{.RejectedCount}}</div>
+            <div style="color: #666; font-size: 14px;">已驳回</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>支持的字段类型</h2>
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-top: 16px;">
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📄 单行文本</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📝 多行文本</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📰 富文本</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">🔢 数字</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📅 日期</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">⏰ 日期时间</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">🔘 单选</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">☑️ 多选</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📑 下拉</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📎 文件上传</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">✍️ 签名</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📋 Repeater</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">📦 字段分组</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">🔘 Switch</div>
+        <div style="padding: 12px; background: #fafafa; border-radius: 6px; text-align: center;">🎚️ 滑块</div>
+    </div>
+</div>
+
+{{template "footer.html"}}

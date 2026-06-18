@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - 动态表单引擎</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; color: #333; }
+        .header { background: #1890ff; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .header h1 { font-size: 20px; }
+        .header nav a { color: white; margin-left: 20px; text-decoration: none; }
+        .header nav a:hover { text-decoration: underline; }
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+        .card { background: white; border-radius: 8px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 16px; }
+        .card h2 { font-size: 18px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #eee; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        th { background: #fafafa; font-weight: 600; }
+        tr:hover { background: #f9f9f9; }
+        .btn { display: inline-block; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px; cursor: pointer; border: none; }
+        .btn-primary { background: #1890ff; color: white; }
+        .btn-primary:hover { background: #40a9ff; }
+        .btn-danger { background: #ff4d4f; color: white; }
+        .btn-success { background: #52c41a; color: white; }
+        .btn-default { background: #fff; border: 1px solid #d9d9d9; color: #333; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; }
+        .badge-pending { background: #fffbe6; color: #faad14; }
+        .badge-approved { background: #f6ffed; color: #52c41a; }
+        .badge-rejected { background: #fff1f0; color: #ff4d4f; }
+        .badge-draft { background: #e6f7ff; color: #1890ff; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+        .field-list { list-style: none; }
+        .field-list li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; }
+        .field-type { color: #1890ff; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📋 动态表单引擎管理后台</h1>
+        <nav>
+            <a href="/admin">首页</a>
+            <a href="/admin/schemas">表单管理</a>
+            <a href="/admin/submissions">提交记录</a>
+        </nav>
+    </div>
+    <div class="container">

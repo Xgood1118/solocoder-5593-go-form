@@ -1,0 +1,55 @@
+{{template "header.html" .}}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; border: none; padding: 0;">表单列表</h2>
+        <a href="/admin/schemas/new" class="btn btn-primary">+ 新建表单</a>
+    </div>
+    {{if .Schemas}}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>版本</th>
+                <th>字段数</th>
+                <th>审批工作流</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Schemas}}
+            <tr>
+                <td><code style="background:#f5f5f5; padding:2px 6px; border-radius:3px; font-size:12px;">{{.ID}}</code></td>
+                <td><strong>{{.Name}}</strong><br><small style="color:#999;">{{.Description}}</small></td>
+                <td>v{{.Version}}</td>
+                <td>{{len .Fields}}</td>
+                <td>
+                    {{if .Workflow}}
+                        {{if .Workflow.Enabled}}
+                            <span class="badge badge-approved">已启用 ({{len .Workflow.Nodes}} 个节点)</span>
+                        {{else}}
+                            <span class="badge badge-draft">未启用</span>
+                        {{end}}
+                    {{else}}
+                        <span style="color:#ccc;">无</span>
+                    {{end}}
+                </td>
+                <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                <td>
+                    <a href="/admin/schemas/{{.ID}}" class="btn btn-default">查看</a>
+                    <a href="/api/schemas/{{.ID}}" target="_blank" class="btn btn-default">JSON</a>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <div class="empty">
+        暂无表单，点击右上角按钮创建第一个表单
+    </div>
+    {{end}}
+</div>
+
+{{template "footer.html"}}

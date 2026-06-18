@@ -1,0 +1,54 @@
+{{template "header.html" .}}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; border: none; padding: 0;">提交记录</h2>
+        {{if .FormID}}
+        <a href="/admin/submissions" class="btn btn-default">查看全部</a>
+        {{end}}
+    </div>
+    {{if .Submissions}}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>表单</th>
+                <th>提交人</th>
+                <th>状态</th>
+                <th>Schema 版本</th>
+                <th>提交时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{range .Submissions}}
+            <tr>
+                <td><code style="background:#f5f5f5; padding:2px 6px; border-radius:3px; font-size:12px;">{{.ID}}</code></td>
+                <td>{{.FormID}}</td>
+                <td>{{.SubmitterName}} <small style="color:#999;">({{.SubmitterID}})</small></td>
+                <td>
+                    {{if eq .Status "pending"}}
+                    <span class="badge badge-pending">待审批</span>
+                    {{else if eq .Status "approved"}}
+                    <span class="badge badge-approved">已通过</span>
+                    {{else if eq .Status "rejected"}}
+                    <span class="badge badge-rejected">已驳回</span>
+                    {{else}}
+                    <span class="badge badge-draft">草稿</span>
+                    {{end}}
+                </td>
+                <td>v{{.SchemaVersion}}</td>
+                <td>{{.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                <td>
+                    <a href="/admin/submissions/{{.ID}}" class="btn btn-default">详情</a>
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+    {{else}}
+    <div class="empty">暂无提交记录</div>
+    {{end}}
+</div>
+
+{{template "footer.html"}}

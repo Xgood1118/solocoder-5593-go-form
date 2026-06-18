@@ -1,0 +1,61 @@
+{{template "header.html" .}}
+
+{{$schema := .Schema}}
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h2 style="margin:0; border:none; padding:0;">{{$schema.Name}}</h2>
+            <p style="color:#666; margin-top:8px;">{{$schema.Description}}</p>
+            <p style="color:#999; font-size:12px; margin-top:4px;">
+                版本 v{{$schema.Version}} · 创建于 {{$schema.CreatedAt.Format "2006-01-02 15:04"}}
+            </p>
+        </div>
+        <div>
+            <a href="/admin/schemas" class="btn btn-default">返回列表</a>
+            <a href="/admin/submissions?form_id={{$schema.ID}}" class="btn btn-primary">查看提交</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2>字段列表 ({{len $schema.Fields}})</h2>
+    <ul class="field-list">
+        {{range $schema.Fields}}
+        <li>
+            <div>
+                <strong>{{.Label}}</strong>
+                <code style="background:#f5f5f5; padding:2px 6px; border-radius:3px; font-size:12px; margin-left:8px;">{{.Key}}</code>
+                {{if .Rules.Required}}
+                <span style="color:#ff4d4f; margin-left:8px;">*</span>
+                {{end}}
+            </div>
+            <span class="field-type">{{.Type}}</span>
+        </li>
+        {{end}}
+    </ul>
+</div>
+
+{{if $schema.Workflow}}
+<div class="card">
+    <h2>审批工作流</h2>
+    {{if $schema.Workflow.Enabled}}
+        <p style="margin-bottom:12px;"><span class="badge badge-approved">已启用</span></p>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            {{range $i, $node := $schema.Workflow.Nodes}}
+                <div style="padding: 12px 20px; background: #e6f7ff; border-radius: 6px; text-align: center;">
+                    <div style="font-weight: bold;">{{.Name}}</div>
+                    <div style="font-size: 12px; color: #666;">{{.Type}}</div>
+                </div>
+                {{if lt $i (sub (len $schema.Workflow.Nodes) 1)}}
+                <div style="color: #1890ff;">→</div>
+                {{end}}
+            {{end}}
+        </div>
+    {{else}}
+        <p><span class="badge badge-draft">未启用</span></p>
+    {{end}}
+</div>
+{{end}}
+
+{{template "footer.html"}}
